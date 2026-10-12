@@ -1,37 +1,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Type Fast</title>
 <style>
-    body{font: 17px system-ui;background:#172033;color:#fff;max-width:600px;margin:50px auto;padding: 16px}
-    h1{color: #70e1d0}#quote{line-height:1.8;color:#cbd5e1}textarea{box-sizing: border-box;width:100%;height:110px;padding:12px;font:16px system-ui;border-radius:8px}button{padding:10px 18px;background: #70e1d0;border: 0;border-radius: 7px;cursor: pointer}
-
+    *{box-sizing:border-box}body{font:17px system-ui;background: #172033;color:#fff;max-width:600px;margin: 40px auto;padding:16px}h1{color:#70e1d0}#quote{line-height:1.9;color:#cbd5e1}textarea{width:100%;height:120px;padding:12px;font:16px system-ui;border:2px solid #70e1d0;border-radius:8px;background:#293750;color:white}button{padding:10px 18px;background:#70e1d0;border:0;border-radius:7px;cursor:pointer;font-weight:bold}.stats{display:flex;justify-content: space-between;flex-wrap:wrap;gap:8px}
 </style>
 <h1>Type Fast</h1>
-<p>Type the passage below as fast and accurately as you can.</p>
-<p id="quote">Small steps every day can lead to big changes. Keep learning, stay curious, and never give up.</p>
+<p>Type the passage as quickly and accurately as you can.</p>
+<p id="quote"></p>
 <textarea id="input" placeholder="Start typing here..." spellcheck="false"></textarea>
-<p>Time: <b id="time">30</b>s | WPM: <b id="acc">100</b>%</p>
-
-<button id="reset">Restart</button>
+<div class="stats"><p>Time: <b id="time"></b>s</p><p>WPM: <b id="wpm">0</b></p>
+<p>Accuracy: <b id="acc">100</b>%</p>
+</div>
+<p id="result">Ready? Start typing!</p>
+<button id="reset">New test</button>
 <script>
-    let q=document.querySelectora("#quote").textContent.trim(),t=30,start,done=false;
-    const input=document.querySelector("#input");
-    function tick() {
-        let left=Math.max(0,30-(Date.now()-start)/1000);
-        document.querySelector("#time").textContent=Math.ceil(left);
-        let s=input.value,c=0;
-        for(let i=0;i<s.length;i++)if(s[i]===q[i])c++;
-        document.querySelector("#acc").textContent=s.length?Math.round(c/s.length*100):100;
-        document.querySelector("#wpm").textContent=Math.round(c/5/Math.max((30-left)/60,1/60));
-        if(!left){done=true;input.disabled=true}
+    let passages=["Small steps every day can lead to big changes. Keep learning and never give up.","Practice makes progress. Stay focused, be patient, and enjoy the journey.","Great things take time. Keep trying, keep improving, and believe in yourself."],q,t=0,done=0;
+    const el=id=>document.getElementById(id),input=el("input");
+    function reset() {
+        q=passages[Math.random()*passages.length|0];el("quote").textContent=q;
+        input.value="";input.disabled=false;t=0;done=0;
+        el("time").textContent=30;el("wpm").textContent=0;el("acc").textContent=100;
+        el("result").textContent="Ready? Start typing!";
+
     }
     input.oninput=()=>{
         if(done)return;
-        if(!start)start=Date.now();
-        tick();
+        if(!t)t=Date.now();
+        let s=input.value,c=0;
+        for(let i=0;i<s.length;i++)if(s[i]===q[i])c++;
+        let sec=Math.max((Date.now()-t)/1000,1);
+        el("wpm").textContent=Math.round(c/5/(sec/60));
+        el("acc").textContent=Math.round(c/Math.max(s.length,1)*100);
+        if(s===q)finish("Passage completed!");
     };
-    setInterval(()=>{if(start&&!done)tick()},200);
-    document.querySelector("#reset").onclick=()=>{
-        start=0;done=false;input.disabled=false;input.value="";
-        ["time","wpm","acc"].forEach((id,i)=>document.querySelector("#"+id).textContent=[30,0,100][i]);
-    };
+    function finish(msg){
+
+        done=1;input.disabled=true;el("result").textContent=msg+" Final WPM:"+el("wpm").textContent;
+
+
+    }
+    setInterval(()=>{
+        if(!t||done)return;
+        let left=Math.max(0,30-(Date.now()-t)/1000);
+        el("time").textContent=Math.ceil(left);
+        if(!left)finish("Time is up!");
+
+    },200);
+    el("reset").onclick=reset;
+    reset();
 </script>
