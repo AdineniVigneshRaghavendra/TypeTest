@@ -6,19 +6,20 @@
 <h1>Type Fast</h1>
 <p>Type the passage as quickly and accurately as you can.</p>
 <p id="quote"></p>
+<progress id="progress" value="0" max="100" style="width: 100%"></progress>
 <textarea id="input" placeholder="Start typing here..." spellcheck="false"></textarea>
-<div class="stats"><p>Time: <b id="time"></b>s</p><p>WPM: <b id="wpm">0</b></p>
+<div class="stats"><p>Time: <b id="time">30</b>s</p><p>WPM: <b id="wpm">0</b> | Best: <b id="best">0</b></p>
 <p>Accuracy: <b id="acc">100</b>%</p>
 </div>
 <p id="result">Ready? Start typing!</p>
 <button id="reset">New test</button>
 <script>
-    let passages=["Small steps every day can lead to big changes. Keep learning and never give up.","Practice makes progress. Stay focused, be patient, and enjoy the journey.","Great things take time. Keep trying, keep improving, and believe in yourself."],q,t=0,done=0;
+    let passages=["Small steps every day can lead to big chances. Keep learning and never give up.","Practice makes progress. Stay focused, be patient, and enjoy the journey.","Great things take time. Keep trying, keep improving, and believe in yourself."],q,t=0,done=0,best=0;try{best=+localStorage.best||0}catch(e){}
     const el=id=>document.getElementById(id),input=el("input");
     function reset() {
         q=passages[Math.random()*passages.length|0];el("quote").textContent=q;
         input.value="";input.disabled=false;t=0;done=0;
-        el("time").textContent=30;el("wpm").textContent=0;el("acc").textContent=100;
+        el("time").textContent=30;el("wpm").textContent=0;el("best").textContent=best;el("acc").textContent=100;
         el("result").textContent="Ready? Start typing!";
 
     }
@@ -29,6 +30,9 @@
         for(let i=0;i<s.length;i++)if(s[i]===q[i])c++;
         let sec=Math.max((Date.now()-t)/1000,1);
         el("wpm").textContent=Math.round(c/5/(sec/60));
+        let w=+el("wpm").textContent;
+        if(w>best){best=w;el("best").textContent=best;try{localStorage.best=best}catch(e){}}
+        el("progress").value=Math.min(100,s.length/q.length*100);
         el("acc").textContent=Math.round(c/Math.max(s.length,1)*100);
         if(s===q)finish("Passage completed!");
     };
